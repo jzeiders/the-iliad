@@ -1,4 +1,6 @@
 version: 2
+orbs:
+  heroku: circleci/heroku@1.0.0
 jobs:
   test:
     docker:
@@ -8,17 +10,16 @@ jobs:
       - run: yarn install
       - run: yarn run test
   deploy:
-    docker:
-      - image: circleci/node
+    executor: heroku/default
     steps:
       - checkout
-      - run: sudo npm install -g now
-      - run: 
-          name: Deploy to Now
-          command: cd client && now --token $ZEIT_TOKEN --local-config now.production.json --prod
+      - heroku/install
+      - heroku/deploy-via-git:
+          only-branch: master
+
 workflows:
   version: 2
-  test_deploy:
+  heroku_deploy:
     jobs:
       - test
       - deploy:
