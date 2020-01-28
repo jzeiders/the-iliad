@@ -9,33 +9,24 @@ import "react-tippy/dist/tippy.css";
 
 import { Theme, GlobalStyles } from "../styles";
 import { ToastProvider } from "react-toast-notifications";
-import PersonSwitcher from "../components/PersonSwitcher";
-import { getProfile } from "../lib/authenticate";
-import UserContext from "../components/UserContext";
 
-class OdysseyApp extends App<any> {
-  state = {
-    isDev: false
-  };
-
+class OdysseyApp extends App {
   static async getInitialProps({ Component, ctx }) {
-    let pageProps: any = {};
+    let pageProps = {};
 
     if (Component.getInitialProps) {
       pageProps = await Component.getInitialProps(ctx);
     }
 
-    const profile = await getProfile(ctx.req);
+    persistLinkReferrerCode(ctx, ctx.query);
 
-    return { pageProps, user: { profile } };
+    return { pageProps };
   }
 
   componentDidMount() {
     // Let's just hardcode the hotjar
     if (process.env.NODE_ENV === "production") {
       hotjar.initialize("1547187");
-    } else {
-      this.setState({ isDev: true });
     }
 
     if (typeof window !== "undefined") {
@@ -48,19 +39,15 @@ class OdysseyApp extends App<any> {
   }
 
   render() {
-    const { Component, pageProps, user } = this.props;
-    const { isDev } = this.state;
+    const { Component, pageProps } = this.props;
 
     return (
       <ThemeProvider theme={Theme}>
         <ToastProvider autoDismiss={true} autoDismissTimeout={3000}>
-          <UserContext.Provider value={user}>
-            <>
-              <GlobalStyles />
-              {isDev && <PersonSwitcher />}
-              <Component {...pageProps} />
-            </>
-          </UserContext.Provider>
+          <>
+            <GlobalStyles />
+            <Component {...pageProps} />
+          </>
         </ToastProvider>
       </ThemeProvider>
     );
